@@ -1,1 +1,63 @@
+Queries
 
+-How many people using each diifent payment method at each payment?-
+
+SET linesize 120
+SET pagesize 100
+
+COLUMN payment_method FORMAT A30 HEADING 'Payment method'
+COLUMN num_payments HEADING 'Total people'
+
+TTITLE 'How many people using each diifent payment method at each payment?'
+
+SELECT pc.payment_method, COUNT(*) AS num_payments
+ FROM payment_channel pc
+ JOIN payment p ON pc.payment_ref_no = p.payment_ref_no
+ GROUP BY pc.payment_method
+ ORDER BY num_payments DESC;
+
+CLEAR COLUMNS
+TTITLE OFF
+
+-Total amount of item by each product-
+
+SET linesize 120
+SET pagesize 100
+
+COLUMN product_name FORMAT A30 HEADING 'Product name'
+COLUMN product_id HEADING 'Code of product'
+COLUMN total_item_qty HEADING 'Total quantity'
+
+TTITLE 'Total amount of item by each product'
+
+
+SELECT p.product_name, id.product_id, SUM(id.item_qty) AS total_item_qty
+FROM ItemDetails id
+JOIN Product p ON id.product_id = p.product_id
+GROUP BY p.product_name, id.product_id
+ORDER BY total_item_qty DESC;
+
+
+
+
+-Top 10 best selling products-
+
+
+SET linesize 120
+SET pagesize 100
+
+
+TTITLE 'Top 10 best selling products
+
+ SELECT *
+    FROM (
+    SELECT Product.product_name, SUM(ItemDetails.item_qty) AS num_products_sold, SUM(ItemDetails.unit_price * ItemDetails.item_qty) AS total_sales
+    FROM Product
+    INNER JOIN ItemDetails ON Product.product_id = ItemDetails.product_id
+    INNER JOIN SalesOrder ON ItemDetails.order_no = SalesOrder.order_no
+    WHERE Product.product_name LIKE '%' || '%'
+    AND EXTRACT(YEAR FROM SalesOrder.order_date) = &year_prompt
+    GROUP BY Product.product_name
+   ORDER BY num_products_sold DESC
+  )
+WHERE ROWNUM <= 10;
